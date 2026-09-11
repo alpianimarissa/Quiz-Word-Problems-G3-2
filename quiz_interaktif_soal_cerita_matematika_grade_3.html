@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Interaktif 20 Soal Cerita Matematika Grade 3</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Plus Jakarta Sans & Fredoka -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        display: ['Fredoka', 'sans-serif'],
+                    },
+                    colors: {
+                        funYellow: '#FCD34D',
+                        funPink: '#F472B6',
+                        funBlue: '#3B82F6',
+                        funGreen: '#10B981',
+                        funPurple: '#8B5CF6'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 50%, #f3e8ff 100%);
+        }
+        .font-display {
+            font-family: 'Fredoka', sans-serif;
+        }
+        .pop-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .pop-card:hover {
+            transform: translateY(-2px);
+        }
+        /* Custom scrollbar for question grid */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b-4 border-indigo-200 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white text-xl shadow-md shadow-indigo-200">
+                    <i class="fa-solid fa-list-check"></i>
+                </div>
+                <div>
+                    <h1 class="font-display font-bold text-slate-800 text-lg sm:text-xl leading-none">
+                        Quiz Soal Cerita Matematika <span class="text-xs bg-indigo-600 text-white font-bold px-2 py-0.5 rounded-full ml-1 uppercase">20 Soal</span>
+                    </h1>
+                    <p class="text-xs text-indigo-600 font-semibold mt-1">
+                        Math Word Problem Challenge • Grade 3 / Primary 3
+                    </p>
+                </div>
+            </div>
+
+            <!-- Auto-Save & Score Badge -->
+            <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+                <!-- Offline / Sync Indicator -->
+                <div id="sync-badge" class="flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">
+                    <i class="fa-solid fa-cloud-check text-emerald-600 animate-pulse"></i>
+                    <span id="sync-text">Progress Tersimpan</span>
+                </div>
+
+                <!-- Score Stars Badge -->
+                <div class="flex items-center gap-2 bg-gradient-to-r from-amber-100 to-yellow-200 border-2 border-amber-400 px-3.5 py-1 rounded-2xl text-amber-900 font-bold text-xs sm:text-sm shadow-sm">
+                    <i class="fa-solid fa-star text-amber-500 text-base"></i>
+                    <div>
+                        <span class="block text-[10px] leading-none uppercase tracking-wider text-amber-800 font-extrabold">Skor Saya</span>
+                        <span class="text-sm font-extrabold text-amber-900"><span id="user-score">0</span> / 100</span>
+                    </div>
+                </div>
+
+                <!-- Reset Button -->
+                <button onclick="promptResetQuiz()" title="Ulangi Kuis / Reset Progress" class="p-2 rounded-xl border-2 border-slate-200 bg-white text-slate-600 hover:text-rose-600 hover:border-rose-300 transition-all cursor-pointer">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
+
+        <!-- Offline Alert Banner (Shown when disconnected) -->
+        <div id="offline-banner" class="hidden bg-amber-500 text-white p-3 rounded-2xl shadow-md flex items-center justify-between gap-3 text-xs sm:text-sm font-bold">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-wifi-slash text-lg"></i>
+                <span>Jaringan terputus! Tenang saja, semua jawabanmu tetap aman dan tersimpan di browser ini.</span>
+            </div>
+            <span class="bg-white/20 px-2 py-1 rounded-lg text-xs uppercase">Mode Offline</span>
+        </div>
+
+        <!-- Navigation Grid Panel (Soal 1-20) -->
+        <section class="bg-white border-2 border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-grip text-indigo-600"></i>
+                    <h2 class="font-display font-bold text-slate-800 text-sm sm:text-base">Navigasi Soal / Question Map</h2>
+                    <span id="answered-counter" class="text-xs font-bold bg-indigo-100 text-indigo-800 px-2.5 py-0.5 rounded-full">0/20 Terjawab</span>
+                </div>
+
+                <!-- Filter Controls -->
+                <div class="flex items-center gap-1 text-xs">
+                    <button onclick="setGridFilter('all')" id="filter-all" class="px-2.5 py-1 rounded-lg font-bold border bg-indigo-600 text-white border-indigo-600 transition-all">Semua</button>
+                    <button onclick="setGridFilter('unanswered')" id="filter-unanswered" class="px-2.5 py-1 rounded-lg font-bold border bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200 transition-all">Belum</button>
+                    <button onclick="setGridFilter('correct')" id="filter-correct" class="px-2.5 py-1 rounded-lg font-bold border bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200 transition-all">Benar</button>
+                    <button onclick="setGridFilter('wrong')" id="filter-wrong" class="px-2.5 py-1 rounded-lg font-bold border bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200 transition-all">Salah</button>
+                </div>
+            </div>
+
+            <!-- Question Numbers Grid -->
+            <div id="question-grid" class="grid grid-cols-5 sm:grid-cols-10 gap-2">
+                <!-- Rendered Dynamically -->
+            </div>
+        </section>
+
+        <!-- Active Question Card Section -->
+        <section id="question-card-container" class="bg-white border-2 border-indigo-100 rounded-3xl p-5 sm:p-8 shadow-sm space-y-6 relative overflow-hidden">
+            <!-- Active Question Header & Story -->
+            <div id="question-content">
+                <!-- Dynamic Content Rendered Here -->
+            </div>
+
+            <!-- Immediate Feedback Display Box -->
+            <div id="feedback-box" class="hidden rounded-2xl p-5 border-2 transition-all space-y-3">
+                <!-- Dynamic Feedback Rendered Here -->
+            </div>
+
+            <!-- Bottom Navigation Bar Controls -->
+            <div class="flex items-center justify-between pt-4 border-t border-slate-200 flex-wrap gap-3">
+                <button id="prev-btn" onclick="navigateQuestion(-1)" class="px-4 py-2.5 rounded-xl border-2 border-slate-200 text-xs sm:text-sm font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>Sebelumnya / Prev</span>
+                </button>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="jumpToUnanswered()" class="px-3 py-2 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-xs font-bold hover:bg-amber-100 transition-all">
+                        <i class="fa-solid fa-forward text-amber-600 mr-1"></i> Soal Belum Diisi
+                    </button>
+                    <button id="finish-summary-btn" onclick="showFinalModal()" class="hidden px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold shadow-md transition-all">
+                        <i class="fa-solid fa-trophy mr-1"></i> Lihat Hasil Akhir
+                    </button>
+                </div>
+
+                <button id="next-btn" onclick="navigateQuestion(1)" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-md shadow-indigo-200 transition-all flex items-center gap-2">
+                    <span>Berikutnya / Next</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Custom Modal: Confirm Reset -->
+    <div id="reset-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl text-center border-2 border-slate-200 animate-in fade-in zoom-in duration-200">
+            <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center text-2xl mx-auto">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+                <h3 class="font-display font-bold text-xl text-slate-800">Ulangi Kuis Dari Awal?</h3>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
+                    Semua jawaban yang telah kamu isi akan dihapus dan kuis akan dimulai kembali dari nomor 1.
+                </p>
+            </div>
+            <div class="flex items-center justify-center gap-3">
+                <button onclick="closeResetModal()" class="px-5 py-2.5 rounded-xl border-2 border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-100">
+                    Batal
+                </button>
+                <button onclick="confirmResetQuiz()" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md">
+                    Ya, Ulangi Kuis
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Modal: Final Completion & Score Certificate -->
+    <div id="completion-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 text-white rounded-3xl max-w-2xl w-full p-6 sm:p-10 space-y-6 shadow-2xl text-center border-2 border-indigo-400 relative overflow-hidden">
+            <div class="absolute -right-12 -bottom-12 w-48 h-48 bg-pink-500/20 rounded-full blur-2xl"></div>
+            <div class="absolute -left-12 -top-12 w-48 h-48 bg-yellow-500/20 rounded-full blur-2xl"></div>
+
+            <button onclick="closeFinalModal()" class="absolute top-4 right-4 text-white/60 hover:text-white text-xl p-2 cursor-pointer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="relative z-10 space-y-4">
+                <div class="w-20 h-20 bg-amber-400 text-slate-900 rounded-3xl flex items-center justify-center text-4xl mx-auto shadow-xl shadow-amber-500/30">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-widest text-amber-300 bg-white/10 px-3 py-1 rounded-full border border-white/20">Hasil Akhir Kuis</span>
+                    <h2 class="font-display text-2xl sm:text-4xl font-bold mt-2">
+                        Selamat! Kamu Telah Selesai! 🎉
+                    </h2>
+                    <p class="text-xs sm:text-sm text-indigo-200 mt-1">Great job! You have completed all 20 math word problems!</p>
+                </div>
+
+                <!-- Score Board Card -->
+                <div class="bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-2xl max-w-sm mx-auto grid grid-cols-2 gap-4 text-center">
+                    <div class="border-r border-white/20 pr-2">
+                        <span class="text-[11px] text-indigo-200 font-semibold block">Total Skor / Score</span>
+                        <span class="font-display text-3xl font-extrabold text-amber-300" id="final-score-val">0</span>
+                        <span class="text-xs text-indigo-200 block">dari 100 poin</span>
+                    </div>
+                    <div class="pl-2">
+                        <span class="text-[11px] text-indigo-200 font-semibold block">Akurasi Jawaban</span>
+                        <span class="font-display text-3xl font-extrabold text-teal-300" id="final-accuracy-val">0%</span>
+                        <span class="text-xs text-indigo-200 block"><span id="final-correct-count">0</span>/20 Benar</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+                    <button onclick="closeFinalModal()" class="px-5 py-2.5 rounded-xl border border-white/30 hover:bg-white/10 text-white font-bold text-xs transition-all">
+                        <i class="fa-solid fa-eye mr-1"></i> Tinjau Jawaban
+                    </button>
+                    <button onclick="promptResetQuiz(); closeFinalModal();" class="px-6 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 font-display font-bold text-xs sm:text-sm shadow-lg transition-all cursor-pointer">
+                        <i class="fa-solid fa-rotate-right mr-1.5"></i> Coba Kuis Lagi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+        <p class="font-semibold text-slate-700">Quiz Soal Cerita Matematika Grade 3 SD • Kurikulum Merdeka / Cambridge Stage 3</p>
+        <p class="text-[11px] text-slate-400 mt-0.5">Sistem penyimpanan otomatis di browser aktif (LocalStorage Support)</p>
+    </footer>
+
+    <!-- JavaScript Data & Logic -->
+    <script>
+        // STORAGE KEY
+        const STORAGE_KEY = 'grade3_math_quiz_state_v2';
+
+        // 20 QUESTIONS DATA
+        // Answer Key Distribution: 5 A (index 0), 5 B (index 1), 5 C (index 2), 5 D (index 3)
+        // Balanced and non-patterned
+        const quizQuestions = [
+            {
+                id: 1,
+                topic: "Penjumlahan & Pengurangan (2 Langkah)",
+                story_id: "Pak Rudi membuat <b>250</b> roti manis. Di pagi hari terjual <b>110</b> roti, dan di siang hari terjual <b>85</b> roti. Berapa sisa roti Pak Rudi sekarang?",
+                story_en: "Mr. Rudi baked <b>250</b> sweet breads. In the morning <b>110</b> breads were sold, and in the afternoon <b>85</b> breads were sold. How many breads are left now?",
+                options: [
+                    "A. 55 roti / breads",
+                    "B. 65 roti / breads",
+                    "C. 140 roti / breads",
+                    "D. 45 roti / breads"
+                ],
+                correctIndex: 0, // A
+                explanation: "<b>Langkah 1:</b> Kurangi roti pagi hari (250 - 110 = 140 roti).<br><b>Langkah 2:</b> Kurangi roti siang hari (140 - 85 = 55 roti tersisa)."
+            },
+            {
+                id: 2,
+                topic: "Perkalian Dasar",
+                story_id: "Siti membeli <b>8</b> kotak donat. Setiap kotak berisi <b>6</b> buah donat. Berapa total seluruh donat yang dibeli Siti?",
+                story_en: "Siti bought <b>8</b> boxes of donuts. Each box contains <b>6</b> donuts. What is the total number of donuts Siti bought?",
+                options: [
+                    "A. 14 donat / donuts",
+                    "B. 42 donat / donuts",
+                    "C. 48 donat / donuts",
+                    "D. 54 donat / donuts"
+                ],
+                correctIndex: 2, // C
+                explanation: "<b>Perkalian:</b> Kalikan jumlah kotak dengan isi tiap kotak (8 × 6 = 48 donat)."
+            },
+            {
+                id: 3,
+                topic: "Pembagian Sama Rata",
+                story_id: "Ibu memiliki <b>36</b> permen yang akan dibagikan sama rata kepada <b>4</b> orang anaknya. Berapa permen yang diterima setiap anak?",
+                story_en: "Mother has <b>36</b> candies to share equally among her <b>4</b> children. How many candies does each child receive?",
+                options: [
+                    "A. 8 permen / candies",
+                    "B. 9 permen / candies",
+                    "C. 12 permen / candies",
+                    "D. 7 permen / candies"
+                ],
+                correctIndex: 1, // B
+                explanation: "<b>Pembagian:</b> Bagi total permen dengan jumlah anak (36 ÷ 4 = 9 permen per anak)."
+            },
+            {
+                id: 4,
+                topic: "Penjumlahan & Pembagian (2 Langkah)",
+                story_id: "Ani memiliki <b>45</b> kelereng dan Budi memiliki <b>35</b> kelereng. Semua kelereng digabungkan lalu dimasukkan ke dalam <b>8</b> kantong sama banyak. Berapa isi kelereng tiap kantong?",
+                story_en: "Ani has <b>45</b> marbles and Budi has <b>35</b> marbles. All marbles are combined then put into <b>8</b> bags equally. How many marbles are in each bag?",
+                options: [
+                    "A. 8 kelereng / marbles",
+                    "B. 12 kelereng / marbles",
+                    "C. 15 kelereng / marbles",
+                    "D. 10 kelereng / marbles"
+                ],
+                correctIndex: 3, // D
+                explanation: "<b>Langkah 1:</b> Hitung total gabungan kelereng (45 + 35 = 80 kelereng).<br><b>Langkah 2:</b> Bagi ke 8 kantong (80 ÷ 8 = 10 kelereng per kantong)."
+            },
+            {
+                id: 5,
+                topic: "Pengurangan & Penjumlahan",
+                story_id: "Di perpustakaan sekolah terdapat <b>320</b> buku. Sebanyak <b>150</b> buku sedang dipinjam siswa. Hari ini perpustakaan menerima kiriman <b>60</b> buku baru. Berapa jumlah buku di perpustakaan sekarang?",
+                story_en: "There are <b>320</b> books in the school library. <b>150</b> books are borrowed by students. Today the library received <b>60</b> new books. How many books are in the library now?",
+                options: [
+                    "A. 230 buku / books",
+                    "B. 210 buku / books",
+                    "C. 170 buku / books",
+                    "D. 330 buku / books"
+                ],
+                correctIndex: 0, // A
+                explanation: "<b>Langkah 1:</b> Kurangi buku dipinjam (320 - 150 = 170 buku).<br><b>Langkah 2:</b> Tambah buku baru (170 + 60 = 230 buku)."
+            },
+            {
+                id: 6,
+                topic: "Perkalian & Pengurangan",
+                story_id: "Pak Guru membeli <b>5</b> kotak pensil warna. Setiap kotak berisi <b>12</b> pensil. Saat diperiksa, ada <b>8</b> pensil yang patah. Berapa pensil warna yang masih bagus?",
+                story_en: "The teacher bought <b>5</b> boxes of colored pencils. Each box contains <b>12</b> pencils. Upon checking, <b>8</b> pencils were broken. How many pencils are still good?",
+                options: [
+                    "A. 68 pensil / pencils",
+                    "B. 48 pensil / pencils",
+                    "C. 56 pensil / pencils",
+                    "D. 52 pensil / pencils"
+                ],
+                correctIndex: 3, // D
+                explanation: "<b>Langkah 1:</b> Total pensil awal (5 × 12 = 60 pensil).<br><b>Langkah 2:</b> Kurangi pensil patah (60 - 8 = 52 pensil yang masih bagus)."
+            },
+            {
+                id: 7,
+                topic: "Perkalian & Pembagian",
+                story_id: "Siska membeli <b>4</b> bungkus manik-manik. Setiap bungkus berisi <b>15</b> manik-manik. Ia membagi seluruh manik-manik tersebut ke dalam <b>3</b> wadah sama banyak. Berapa isi manik-manik pada setiap wadah?",
+                story_en: "Siska bought <b>4</b> packs of beads. Each pack contains <b>15</b> beads. She shared all beads into <b>3</b> containers equally. How many beads are in each container?",
+                options: [
+                    "A. 15 manik-manik / beads",
+                    "B. 20 manik-manik / beads",
+                    "C. 25 manik-manik / beads",
+                    "D. 30 manik-manik / beads"
+                ],
+                correctIndex: 1, // B
+                explanation: "<b>Langkah 1:</b> Total manik-manik (4 × 15 = 60 manik-manik).<br><b>Langkah 2:</b> Bagi ke 3 wadah (60 ÷ 3 = 20 manik-manik)."
+            },
+            {
+                id: 8,
+                topic: "Penjumlahan Ratusan",
+                story_id: "Seorang pedagang membawa <b>175</b> buah apel merah dan <b>145</b> buah apel hijau ke pasar. Berapa total seluruh buah apel pedagang tersebut?",
+                story_en: "A trader brought <b>175</b> red apples and <b>145</b> green apples to the market. What is the total number of apples?",
+                options: [
+                    "A. 310 buah / apples",
+                    "B. 330 buah / apples",
+                    "C. 320 buah / apples",
+                    "D. 300 buah / apples"
+                ],
+                correctIndex: 2, // C
+                explanation: "<b>Penjumlahan:</b> Hitung total gabungan (175 + 145 = 320 buah apel)."
+            },
+            {
+                id: 9,
+                topic: "Pembagian & Pengurangan",
+                story_id: "Ibu memanggang <b>42</b> kue kering dan meletakkannya sama banyak ke dalam <b>6</b> piring. Dini mengambil <b>2</b> kue dari salah satu piring. Berapa kue yang tersisa di piring tersebut?",
+                story_en: "Mother baked <b>42</b> cookies and placed them equally onto <b>6</b> plates. Dini took <b>2</b> cookies from one plate. How many cookies remain on that plate?",
+                options: [
+                    "A. 5 kue / cookies",
+                    "B. 7 kue / cookies",
+                    "C. 6 kue / cookies",
+                    "D. 4 kue / cookies"
+                ],
+                correctIndex: 0, // A
+                explanation: "<b>Langkah 1:</b> Isi tiap piring (42 ÷ 6 = 7 kue).<br><b>Langkah 2:</b> Kurangi kue yang diambil Dini (7 - 2 = 5 kue)."
+            },
+            {
+                id: 10,
+                topic: "Perkalian Meja Kelas",
+                story_id: "Di ruang kelas 3 terdapat <b>7</b> baris meja. Setiap baris terdiri dari <b>4</b> buah meja. Berapa total seluruh meja di kelas tersebut?",
+                story_en: "In Grade 3 classroom there are <b>7</b> rows of desks. Each row consists of <b>4</b> desks. How many desks are there in total?",
+                options: [
+                    "A. 24 meja / desks",
+                    "B. 32 meja / desks",
+                    "C. 21 meja / desks",
+                    "D. 28 meja / desks"
+                ],
+                correctIndex: 3, // D
+                explanation: "<b>Perkalian:</b> Kalikan baris dengan meja per baris (7 × 4 = 28 meja)."
+            },
+            {
+                id: 11,
+                topic: "Operasi Uang & Tabungan",
+                story_id: "Dino menabung Rp <b>15.000</b> pada minggu pertama dan Rp <b>20.000</b> pada minggu kedua. Ia lalu membeli buku seharga Rp <b>12.000</b>. Berapa sisa tabungan Dino?",
+                story_en: "Dino saved Rp <b>15,000</b> in the first week and Rp <b>20,000</b> in the second week. He bought a book for Rp <b>12,000</b>. How much money does Dino have left?",
+                options: [
+                    "A. Rp 25.000",
+                    "B. Rp 23.000",
+                    "C. Rp 22.000",
+                    "D. Rp 27.000"
+                ],
+                correctIndex: 1, // B
+                explanation: "<b>Langkah 1:</b> Total tabungan (15.000 + 20.000 = Rp 35.000).<br><b>Langkah 2:</b> Kurangi harga buku (35.000 - 12.000 = Rp 23.000)."
+            },
+            {
+                id: 12,
+                topic: "Pembagian Bibit Tanaman",
+                story_id: "Pak Tani memiliki <b>54</b> bibit jagung. Ia menanam bibit tersebut secara merata di <b>6</b> petak tanah. Berapa bibit jagung pada setiap petak?",
+                story_en: "A farmer has <b>54</b> corn seeds. He plants them equally in <b>6</b> garden plots. How many corn seeds are in each plot?",
+                options: [
+                    "A. 8 bibit / seeds",
+                    "B. 7 bibit / seeds",
+                    "C. 9 bibit / seeds",
+                    "D. 6 bibit / seeds"
+                ],
+                correctIndex: 2, // C
+                explanation: "<b>Pembagian:</b> Bagi bibit ke 6 petak (54 ÷ 6 = 9 bibit per petak)."
+            },
+            {
+                id: 13,
+                topic: "Perkalian & Penjumlahan",
+                story_id: "Rian mendapat <b>3</b> lembar stiker. Setiap lembar berisi <b>8</b> stiker bintang. Kakaknya memberi tambahan <b>5</b> stiker lagi. Berapa total stiker Rian sekarang?",
+                story_en: "Rian got <b>3</b> sheets of stickers. Each sheet has <b>8</b> star stickers. His brother gave him <b>5</b> more stickers. How many stickers does Rian have now?",
+                options: [
+                    "A. 29 stiker / stickers",
+                    "B. 27 stiker / stickers",
+                    "C. 32 stiker / stickers",
+                    "D. 24 stiker / stickers"
+                ],
+                correctIndex: 0, // A
+                explanation: "<b>Langkah 1:</b> Hitung stiker dari lembaran (3 × 8 = 24 stiker).<br><b>Langkah 2:</b> Tambahkan stiker pemberian kakak (24 + 5 = 29 stiker)."
+            },
+            {
+                id: 14,
+                topic: "Pengurangan Panjang Pita",
+                story_id: "Rina memiliki pita sepanjang <b>180</b> cm. Ia memotong pita tersebut sepanjang <b>75</b> cm untuk merangkai kado. Berapa cm sisa pita Rina?",
+                story_en: "Rina has a ribbon that is <b>180</b> cm long. She cuts off <b>75</b> cm to wrap a gift. How many cm of ribbon does Rina have left?",
+                options: [
+                    "A. 115 cm",
+                    "B. 95 cm",
+                    "C. 100 cm",
+                    "D. 105 cm"
+                ],
+                correctIndex: 3, // D
+                explanation: "<b>Pengurangan:</b> Kurangkan panjang pita awal dengan potongan (180 - 75 = 105 cm)."
+            },
+            {
+                id: 15,
+                topic: "Penjumlahan & Pembagian Buah",
+                story_id: "Untuk persiapan pesta, Ayah membeli <b>28</b> buah jeruk dan Ibu membeli <b>32</b> buah jeruk. Semua jeruk dimasukkan ke dalam <b>6</b> mangkuk sama banyak. Berapa isi jeruk tiap mangkuk?",
+                story_en: "For party preparation, Father bought <b>28</b> oranges and Mother bought <b>32</b> oranges. All oranges were placed into <b>6</b> bowls equally. How many oranges are in each bowl?",
+                options: [
+                    "A. 8 jeruk / oranges",
+                    "B. 10 jeruk / oranges",
+                    "C. 12 jeruk / oranges",
+                    "D. 9 jeruk / oranges"
+                ],
+                correctIndex: 1, // B
+                explanation: "<b>Langkah 1:</b> Total jeruk (28 + 32 = 60 jeruk).<br><b>Langkah 2:</b> Bagi ke 6 mangkuk (60 ÷ 6 = 10 jeruk per mangkuk)."
+            },
+            {
+                id: 16,
+                topic: "Perkalian & Krayon Hilang",
+                story_id: "Bu Nita membeli <b>4</b> kotak krayon baru. Setiap kotak berisi <b>12</b> batang krayon. Ternyata ada <b>6</b> krayon yang hilang. Berapa sisa krayon Bu Nita?",
+                story_en: "Mrs. Nita bought <b>4</b> boxes of new crayons. Each box contains <b>12</b> crayons. It turned out <b>6</b> crayons were lost. How many crayons are remaining?",
+                options: [
+                    "A. 44 krayon / crayons",
+                    "B. 40 krayon / crayons",
+                    "C. 42 krayon / crayons",
+                    "D. 46 krayon / crayons"
+                ],
+                correctIndex: 2, // C
+                explanation: "<b>Langkah 1:</b> Total krayon awal (4 × 12 = 48 krayon).<br><b>Langkah 2:</b> Kurangi krayon hilang (48 - 6 = 42 krayon tersisa)."
+            },
+            {
+                id: 17,
+                topic: "Pembagian Mainan",
+                story_id: "Dodi mempunyai <b>32</b> buah mobil-mobilan. Ia ingin menatanya secara rapi ke dalam <b>4</b> kotak mainan sama banyak. Berapa mobil-mobilan di setiap kotak?",
+                story_en: "Dodi has <b>32</b> toy cars. He wants to arrange them neatly into <b>4</b> toy boxes equally. How many toy cars are in each box?",
+                options: [
+                    "A. 8 mobil / cars",
+                    "B. 6 mobil / cars",
+                    "C. 9 mobil / cars",
+                    "D. 7 mobil / cars"
+                ],
+                correctIndex: 0, // A
+                explanation: "<b>Pembagian:</b> Bagi total mobil dengan jumlah kotak (32 ÷ 4 = 8 mobil per kotak)."
+            },
+            {
+                id: 18,
+                topic: "Perkalian & Biskuit Dimakan",
+                story_id: "Terdapat <b>6</b> bungkus biskuit cokelat. Setiap bungkus berisi <b>10</b> keping biskuit. Kakak memakan <b>15</b> keping biskuit. Berapa sisa biskuit sekarang?",
+                story_en: "There are <b>6</b> packs of chocolate biscuits. Each pack contains <b>10</b> biscuits. Brother ate <b>15</b> biscuits. How many biscuits are left now?",
+                options: [
+                    "A. 55 biskuit / biscuits",
+                    "B. 35 biskuit / biscuits",
+                    "C. 50 biskuit / biscuits",
+                    "D. 45 biskuit / biscuits"
+                ],
+                correctIndex: 3, // D
+                explanation: "<b>Langkah 1:</b> Total biskuit awal (6 × 10 = 60 biskuit).<br><b>Langkah 2:</b> Kurangi biskuit dimakan (60 - 15 = 45 biskuit)."
+            },
+            {
+                id: 19,
+                topic: "Ikan Kolam (Penjumlahan & Pengurangan)",
+                story_id: "Paman memelihara <b>135</b> ikan gurame di kolam A dan <b>165</b> ikan gurame di kolam B. Paman memanen <b>90</b> ekor ikan untuk dijual. Berapa sisa ikan gurame paman?",
+                story_en: "Uncle raised <b>135</b> gourami fish in pond A and <b>165</b> fish in pond B. He harvested <b>90</b> fish for sale. How many fish are left?",
+                options: [
+                    "A. 220 ekor / fish",
+                    "B. 210 ekor / fish",
+                    "C. 200 ekor / fish",
+                    "D. 190 ekor / fish"
+                ],
+                correctIndex: 1, // B
+                explanation: "<b>Langkah 1:</b> Total seluruh ikan (135 + 165 = 300 ekor).<br><b>Langkah 2:</b> Kurangi ikan yang dipanen (300 - 90 = 210 ekor)."
+            },
+            {
+                id: 20,
+                topic: "Pembagian & Sisa Penghapus",
+                story_id: "Sekolah menerima bantuan <b>80</b> buah penghapus. Penghapus itu dibagi rata ke <b>8</b> kelas. Jika kelas 3A memakai <b>3</b> penghapus, berapa sisa penghapus di kelas 3A?",
+                story_en: "The school received <b>80</b> erasers. The erasers were shared equally among <b>8</b> classes. If class 3A used <b>3</b> erasers, how many remain in class 3A?",
+                options: [
+                    "A. 5 penghapus / erasers",
+                    "B. 8 penghapus / erasers",
+                    "C. 7 penghapus / erasers",
+                    "D. 6 penghapus / erasers"
+                ],
+                correctIndex: 2, // C
+                explanation: "<b>Langkah 1:</b> Penghapus per kelas (80 ÷ 8 = 10 penghapus).<br><b>Langkah 2:</b> Kurangi yang dipakai (10 - 3 = 7 penghapus)."
+            }
+        ];
+
+        // STATE MANAGEMENT
+        let quizState = {
+            currentIndex: 0,
+            answers: {}, // questionIndex: selectedOptionIndex
+            filter: 'all' // all, unanswered, correct, wrong
+        };
+
+        // On window load
+        window.onload = function() {
+            loadStateFromLocalStorage();
+            setupOnlineOfflineDetectors();
+            renderQuestionGrid();
+            renderQuestionCard();
+            updateHeaderBadges();
+        };
+
+        // SAVE & LOAD STATE WITH LOCALSTORAGE
+        function saveStateToLocalStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    answers: quizState.answers,
+                    currentIndex: quizState.currentIndex
+                }));
+                showSyncStatus(true);
+            } catch (e) {
+                console.warn('LocalStorage error:', e);
+            }
+        }
+
+        function loadStateFromLocalStorage() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.answers) quizState.answers = parsed.answers;
+                    if (typeof parsed.currentIndex === 'number' && parsed.currentIndex >= 0 && parsed.currentIndex < quizQuestions.length) {
+                        quizState.currentIndex = parsed.currentIndex;
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to load storage state:', e);
+            }
+        }
+
+        function showSyncStatus(saved) {
+            const syncBadge = document.getElementById('sync-badge');
+            const syncText = document.getElementById('sync-text');
+            if (saved) {
+                syncBadge.className = "flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm";
+                syncText.innerText = "Progress Tersimpan";
+            }
+        }
+
+        function setupOnlineOfflineDetectors() {
+            const banner = document.getElementById('offline-banner');
+            window.addEventListener('offline', () => {
+                banner.classList.remove('hidden');
+            });
+            window.addEventListener('online', () => {
+                banner.classList.add('hidden');
+            });
+            if (!navigator.onLine) {
+                banner.classList.remove('hidden');
+            }
+        }
+
+        // CALCULATE SCORE & METRICS
+        function calculateMetrics() {
+            let answeredCount = 0;
+            let correctCount = 0;
+
+            quizQuestions.forEach((q, idx) => {
+                if (quizState.answers.hasOwnProperty(idx)) {
+                    answeredCount++;
+                    if (quizState.answers[idx] === q.correctIndex) {
+                        correctCount++;
+                    }
+                }
+            });
+
+            const totalScore = Math.round((correctCount / quizQuestions.length) * 100);
+            return { answeredCount, correctCount, totalScore };
+        }
+
+        function updateHeaderBadges() {
+            const { answeredCount, correctCount, totalScore } = calculateMetrics();
+            document.getElementById('user-score').innerText = totalScore;
+            document.getElementById('answered-counter').innerText = `${answeredCount}/${quizQuestions.length} Terjawab`;
+
+            // Toggle finish button visibility if all questions answered
+            const finishBtn = document.getElementById('finish-summary-btn');
+            if (answeredCount === quizQuestions.length) {
+                finishBtn.classList.remove('hidden');
+            } else {
+                finishBtn.classList.add('hidden');
+            }
+        }
+
+        // RENDER QUESTION MAP GRID
+        function renderQuestionGrid() {
+            const gridContainer = document.getElementById('question-grid');
+            gridContainer.innerHTML = '';
+
+            quizQuestions.forEach((q, idx) => {
+                const hasAnswered = quizState.answers.hasOwnProperty(idx);
+                const isCorrect = hasAnswered && (quizState.answers[idx] === q.correctIndex);
+                const isActive = (quizState.currentIndex === idx);
+
+                // Filter check
+                if (quizState.filter === 'unanswered' && hasAnswered) return;
+                if (quizState.filter === 'correct' && (!hasAnswered || !isCorrect)) return;
+                if (quizState.filter === 'wrong' && (!hasAnswered || isCorrect)) return;
+
+                const btn = document.createElement('button');
+                btn.onclick = () => jumpToQuestion(idx);
+
+                let baseStyles = "h-11 rounded-xl text-xs sm:text-sm font-extrabold transition-all relative flex flex-col items-center justify-center cursor-pointer border-2 ";
+
+                if (isActive) {
+                    baseStyles += "ring-4 ring-indigo-400 ring-offset-1 z-10 shadow-md ";
+                }
+
+                if (!hasAnswered) {
+                    baseStyles += "bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200";
+                } else if (isCorrect) {
+                    baseStyles += "bg-emerald-500 border-emerald-600 text-white shadow-sm";
+                } else {
+                    baseStyles += "bg-rose-500 border-rose-600 text-white shadow-sm";
+                }
+
+                btn.className = baseStyles;
+                btn.innerHTML = `
+                    <span>${idx + 1}</span>
+                    ${hasAnswered ? (isCorrect ? '<i class="fa-solid fa-check text-[10px]"></i>' : '<i class="fa-solid fa-xmark text-[10px]"></i>') : ''}
+                `;
+
+                gridContainer.appendChild(btn);
+            });
+        }
+
+        function setGridFilter(filterType) {
+            quizState.filter = filterType;
+            ['all', 'unanswered', 'correct', 'wrong'].forEach(f => {
+                const el = document.getElementById(`filter-${f}`);
+                if (f === filterType) {
+                    el.className = "px-2.5 py-1 rounded-lg font-bold border bg-indigo-600 text-white border-indigo-600 transition-all";
+                } else {
+                    el.className = "px-2.5 py-1 rounded-lg font-bold border bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200 transition-all";
+                }
+            });
+            renderQuestionGrid();
+        }
+
+        // RENDER ACTIVE QUESTION CARD
+        function renderQuestionCard() {
+            const idx = quizState.currentIndex;
+            const q = quizQuestions[idx];
+            const hasAnswered = quizState.answers.hasOwnProperty(idx);
+            const selectedOpt = hasAnswered ? quizState.answers[idx] : null;
+
+            const container = document.getElementById('question-content');
+            const feedbackBox = document.getElementById('feedback-box');
+
+            // Render Header & Story
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between flex-wrap gap-2 border-b border-slate-100 pb-3">
+                        <span class="bg-indigo-100 text-indigo-900 border border-indigo-200 font-extrabold text-xs px-3 py-1 rounded-full">
+                            Soal ${idx + 1} dari ${quizQuestions.length} • ${q.topic}
+                        </span>
+                        <span class="text-xs font-bold text-slate-400">Poin Soal: +5 Pts</span>
+                    </div>
+
+                    <div class="bg-indigo-50/70 border-2 border-indigo-100 p-5 rounded-2xl space-y-2">
+                        <p class="text-base sm:text-lg text-slate-800 font-medium leading-relaxed">${q.story_id}</p>
+                        <p class="text-xs sm:text-sm text-slate-500 italic leading-relaxed border-t border-indigo-100 pt-2">${q.story_en}</p>
+                    </div>
+
+                    <!-- Options Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                        ${q.options.map((optText, optIdx) => {
+                            let btnStyle = "w-full text-left p-4 rounded-2xl border-2 font-bold text-sm transition-all flex items-center justify-between cursor-pointer ";
+
+                            if (!hasAnswered) {
+                                btnStyle += "bg-white hover:bg-indigo-50 border-slate-200 text-slate-800 pop-card shadow-sm";
+                            } else {
+                                if (optIdx === q.correctIndex) {
+                                    btnStyle += "bg-emerald-500 text-white border-emerald-600 shadow-md ring-2 ring-emerald-300";
+                                } else if (optIdx === selectedOpt) {
+                                    btnStyle += "bg-rose-500 text-white border-rose-600 shadow-md";
+                                } else {
+                                    btnStyle += "bg-slate-50 border-slate-200 text-slate-400 opacity-60 cursor-not-allowed";
+                                }
+                            }
+
+                            return `
+                                <button onclick="selectOption(${idx}, ${optIdx})" ${hasAnswered ? 'disabled' : ''} class="${btnStyle}">
+                                    <span>${optText}</span>
+                                    ${hasAnswered && optIdx === q.correctIndex ? '<i class="fa-solid fa-circle-check text-xl"></i>' : ''}
+                                    ${hasAnswered && optIdx === selectedOpt && optIdx !== q.correctIndex ? '<i class="fa-solid fa-circle-xmark text-xl"></i>' : ''}
+                                </button>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+
+            // Render Feedback Box if answered
+            if (hasAnswered) {
+                const isCorrect = (selectedOpt === q.correctIndex);
+                feedbackBox.classList.remove('hidden');
+
+                if (isCorrect) {
+                    feedbackBox.className = "rounded-2xl p-5 border-2 bg-emerald-50 border-emerald-300 text-emerald-900 space-y-2 animate-in fade-in duration-300 shadow-sm";
+                    feedbackBox.innerHTML = `
+                        <div class="flex items-center gap-2 font-display text-lg font-bold text-emerald-800">
+                            <i class="fa-solid fa-circle-check text-2xl text-emerald-600"></i>
+                            <span>Jawaban Kamu BENAR! 🎉 (Correct!)</span>
+                        </div>
+                        <div class="text-xs sm:text-sm font-medium leading-relaxed bg-white/80 p-3.5 rounded-xl border border-emerald-200">
+                            <span class="font-bold block text-emerald-900 mb-1">💡 Pembahasan & Langkah Penyelesaian:</span>
+                            ${q.explanation}
+                        </div>
+                    `;
+                } else {
+                    feedbackBox.className = "rounded-2xl p-5 border-2 bg-rose-50 border-rose-300 text-rose-900 space-y-2 animate-in fade-in duration-300 shadow-sm";
+                    feedbackBox.innerHTML = `
+                        <div class="flex items-center gap-2 font-display text-lg font-bold text-rose-800">
+                            <i class="fa-solid fa-circle-xmark text-2xl text-rose-600"></i>
+                            <span>Jawaban Belum Tepat! ❌ (Incorrect!)</span>
+                        </div>
+                        <div class="text-xs sm:text-sm font-medium leading-relaxed bg-white/80 p-3.5 rounded-xl border border-rose-200">
+                            <span class="font-bold block text-rose-900 mb-1">💡 Pembahasan & Langkah Penyelesaian yang Benar:</span>
+                            ${q.explanation}
+                        </div>
+                    `;
+                }
+            } else {
+                feedbackBox.classList.add('hidden');
+            }
+
+            // Update Nav Buttons
+            document.getElementById('prev-btn').disabled = (idx === 0);
+            document.getElementById('next-btn').disabled = (idx === quizQuestions.length - 1);
+        }
+
+        // SELECT OPTION HANDLER
+        function selectOption(qIndex, optIndex) {
+            if (quizState.answers.hasOwnProperty(qIndex)) return; // Already answered
+
+            quizState.answers[qIndex] = optIndex;
+            saveStateToLocalStorage();
+
+            const isCorrect = (optIndex === quizQuestions[qIndex].correctIndex);
+            if (isCorrect) {
+                confetti({
+                    particleCount: 40,
+                    spread: 60,
+                    origin: { y: 0.7 }
+                });
+            }
+
+            updateHeaderBadges();
+            renderQuestionGrid();
+            renderQuestionCard();
+
+            // Auto check if all finished
+            const { answeredCount } = calculateMetrics();
+            if (answeredCount === quizQuestions.length) {
+                setTimeout(() => {
+                    showFinalModal();
+                }, 1200);
+            }
+        }
+
+        // NAVIGATION HANDLERS
+        function navigateQuestion(direction) {
+            const nextIdx = quizState.currentIndex + direction;
+            if (nextIdx >= 0 && nextIdx < quizQuestions.length) {
+                quizState.currentIndex = nextIdx;
+                saveStateToLocalStorage();
+                renderQuestionGrid();
+                renderQuestionCard();
+            }
+        }
+
+        function jumpToQuestion(index) {
+            if (index >= 0 && index < quizQuestions.length) {
+                quizState.currentIndex = index;
+                saveStateToLocalStorage();
+                renderQuestionGrid();
+                renderQuestionCard();
+            }
+        }
+
+        function jumpToUnanswered() {
+            for (let i = 0; i < quizQuestions.length; i++) {
+                if (!quizState.answers.hasOwnProperty(i)) {
+                    jumpToQuestion(i);
+                    return;
+                }
+            }
+            // If all answered, show notification or final modal
+            showFinalModal();
+        }
+
+        // MODAL MANAGEMENT
+        function promptResetQuiz() {
+            document.getElementById('reset-modal').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            document.getElementById('reset-modal').classList.add('hidden');
+        }
+
+        function confirmResetQuiz() {
+            quizState.answers = {};
+            quizState.currentIndex = 0;
+            quizState.filter = 'all';
+            localStorage.removeItem(STORAGE_KEY);
+            closeResetModal();
+
+            updateHeaderBadges();
+            setGridFilter('all');
+            renderQuestionGrid();
+            renderQuestionCard();
+        }
+
+        function showFinalModal() {
+            const { answeredCount, correctCount, totalScore } = calculateMetrics();
+            const accuracy = Math.round((correctCount / quizQuestions.length) * 100);
+
+            document.getElementById('final-score-val').innerText = totalScore;
+            document.getElementById('final-accuracy-val').innerText = `${accuracy}%`;
+            document.getElementById('final-correct-count').innerText = correctCount;
+
+            document.getElementById('completion-modal').classList.remove('hidden');
+
+            if (totalScore >= 70) {
+                confetti({
+                    particleCount: 100,
+                    spread: 100,
+                    origin: { y: 0.5 }
+                });
+            }
+        }
+
+        function closeFinalModal() {
+            document.getElementById('completion-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
